@@ -3,7 +3,11 @@ package com.fifainfo.fifainfo.service;
 
 import com.fifainfo.fifainfo.entity.Player;
 import com.fifainfo.fifainfo.entity.PlayerInfo;
+import com.fifainfo.fifainfo.entity.PlayerList;
+import com.fifainfo.fifainfo.entity.User;
 import com.fifainfo.fifainfo.repository.PlayerInfoRepository;
+import com.fifainfo.fifainfo.repository.PlayerListRepository;
+import com.fifainfo.fifainfo.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -15,10 +19,16 @@ public class PlayerInfoService {
 
     @Autowired
     private PlayerInfoRepository playerInfoRepository;
+    @Autowired
+    private PlayerListRepository playerListRepository;
+    @Autowired
+    private UserRepository userRepository;
 
-    public boolean isPresent(String name) {
-        Long temp = playerInfoRepository.countByName(name);
-        if (temp > 0) {
+
+    public boolean isPresent(String name,String nickname) {
+        Optional<PlayerInfo> playerInfo= playerInfoRepository.findByNameAndNickname(name,nickname);
+
+        if (playerInfo.isPresent()) {
             return true;
         } else {
             return false;
@@ -26,7 +36,7 @@ public class PlayerInfoService {
     }
 
 
-    public void createPlayerInfo(String name) {
+    public void createPlayerInfo(String name,String nickname) {
         PlayerInfo playerInfo=PlayerInfo.builder()
                 .name(name)
                 .assist(0l)
@@ -34,13 +44,34 @@ public class PlayerInfoService {
                 .goal(0l)
                 .shoot(0l)
                 .game(0)
+                .AttackPoints(0l)
                 .build();
-        playerInfoRepository.save(playerInfo);
+
+        Optional<PlayerList> playerList=playerListRepository.findByNickname(nickname);
+        PlayerList pl;
+        if ( ! playerList.isPresent() ) {
+
+              pl= PlayerList.createPlayerList(nickname);
+              playerListRepository.save(pl);
+        }
+        else {
+             pl = playerList.get();
+        }
+        playerInfo.setPlayerList(pl);
+
+        Optional<PlayerInfo> pi=playerInfoRepository.findByPlayerListAndName(pl, name);
+        if(! pi.isPresent()){
+            playerInfoRepository.save(playerInfo);
+        }
+
+       // playerInfoRepository.save(playerInfo);
     }
 
-    public void updateInfo(String playername, int i, Long shoot, Long effectiveShoot, Long assist, Long goal) {
+    public void updateInfo(String nickname,String playername, int i, Long shoot, Long effectiveShoot, Long assist, Long goal) {
 
-        Optional<PlayerInfo> playerInfo = playerInfoRepository.findByName(playername);
+        PlayerList playerList = playerListRepository.findByNickname(nickname).get();
+
+        Optional<PlayerInfo> playerInfo = playerInfoRepository.findByPlayerListAndName(playerList,playername);
         if (playerInfo.isPresent()) {
             PlayerInfo pl = playerInfo.get();
 
@@ -49,11 +80,21 @@ public class PlayerInfoService {
             pl.setEffectiveShoot(pl.getEffectiveShoot()+effectiveShoot);
             pl.setAssist(pl.getAssist()+assist);
             pl.setGoal(pl.getGoal()+goal);
+            pl.setAttackPoints(pl.getAttackPoints() + goal + assist);
+
             playerInfoRepository.save(pl);
         }
     }
 
-    public List<PlayerInfo> all() {
-        return playerInfoRepository.findAll();
+    public List<PlayerInfo> all(String nickname) {
+        System.out.println(nickname);
+        PlayerList playerList = playerListRepository.findByNickname(nickname).get();
+
+        return playerInfoRepository.findAllByPlayerList(playerList);
+    }
+
+
+    public PlayerInfo findInfo(PlayerList playerList, String player) {
+        return playerInfoRepository.findByPlayerListAndName(playerList,player).get();
     }
 }
