@@ -25,7 +25,7 @@ public class PlayerInfo {
     private PlayerList playerList;
 
 
-
+    private Long spId;
     private String nickname;
 
     private String name;

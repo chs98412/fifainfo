@@ -146,7 +146,7 @@ public class PlayerListService {
                                     String playername = playerList.get(spId);
                                     JSONObject status = (JSONObject) player.get("status");
                                     if (!((Long) status.get("passTry")).equals(0l)) {
-                                        playerInfoService.createPlayerInfo(playername,nickname);
+                                        playerInfoService.createPlayerInfo(playername,spId,nickname);
 
 
                                         playerInfoService.updateInfo(nickname

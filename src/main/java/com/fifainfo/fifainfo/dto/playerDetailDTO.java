@@ -8,6 +8,7 @@ import lombok.Getter;
 public class playerDetailDTO {
 
     private String name;
+    private Long spId;
 
     private int game;
 

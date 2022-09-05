@@ -39,12 +39,18 @@ public class testController {
     @Autowired
     private PlayerListService playerListService;
 
+    @GetMapping("/testtest")
+    public String testtest() {
+        return "testtest";
+    }
+
 
     @PostMapping("/playerDetail")
     public playerDetailDTO playerDetail(@RequestBody playerDetailRequestDTO pl) {
         PlayerList playerList = playerListService.findPlayer(pl.getNickname());
         PlayerInfo playerInfo = playerInfoService.findInfo(playerList, pl.getPlayer());
         playerDetailDTO result= playerDetailDTO.builder()
+                .spId(playerInfo.getSpId())
                 .assist(playerInfo.getAssist())
                 .effectiveShoot(playerInfo.getEffectiveShoot())
                 .game(playerInfo.getGame())
@@ -241,7 +247,7 @@ public class testController {
                                     String playername = playerList.get(spId);
                                     JSONObject status = (JSONObject) player.get("status");
                                     if (!((Long) status.get("passTry")).equals(0l)) {
-                                        playerInfoService.createPlayerInfo(playername,userDTO.getUserNickname());
+                                        playerInfoService.createPlayerInfo(playername,spId,userDTO.getUserNickname());
 
 
                                         playerInfoService.updateInfo(userDTO.getUserNickname(),playername, 1, (Long) status.get("shoot"), (Long) status.get("effectiveShoot"), (Long) status.get("assist"), (Long) status.get("goal"));

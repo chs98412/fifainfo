@@ -36,9 +36,10 @@ public class PlayerInfoService {
     }
 
 
-    public void createPlayerInfo(String name,String nickname) {
+    public void createPlayerInfo(String name,Long spId,String nickname) {
         PlayerInfo playerInfo=PlayerInfo.builder()
                 .name(name)
+                .spId(spId)
                 .assist(0l)
                 .effectiveShoot(0l)
                 .goal(0l)
